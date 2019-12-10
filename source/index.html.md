@@ -1,11 +1,10 @@
 ---
-title: API Reference
+title: Swop - Documentation
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
-  - ruby
-  - python
-  - javascript
+  - graphql
+
 
 toc_footers:
   - <a href='#'>Sign Up for a Developer Key</a>
@@ -17,223 +16,103 @@ includes:
 search: true
 ---
 
-# Introduction
+# Swop - Curreny Exchange Rate API
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
-
-We have language bindings in Shell, Ruby, Python, and JavaScript! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
-
-This example API documentation page was created with [Slate](https://github.com/lord/slate). Feel free to edit it and use it as a base for your own API's documentation.
+The Swop Currency Exchange Rate API aggregates publicly available sources for exchange rate data.
 
 # Authentication
 
-> To authorize, use this code:
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-```
+> Passing the `Authorization` header using `curl`
 
 ```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
+curl \
+  -X POST \
+  -H "Authorization: ApiKey <your-api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{ "query": "{ latest { target value }}" }'\
+  https://swop.cx/graphql
 ```
 
-```javascript
-const kittn = require('kittn');
+Pass your API key using the `Authorization` header:
 
-let api = kittn.authorize('meowmeowmeow');
-```
-
-> Make sure to replace `meowmeowmeow` with your API key.
-
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
-
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
+`Authorization: ApiKey <your-api-key>`
 
 <aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
+You must replace <code>&lt;your-api-key&gt;</code> with your personal API key.
 </aside>
 
-# Kittens
+If you're using the GraphQL Playground the header will be automatically set for you. Note that you will need to verify your Email address before being able to use the GraphQL Playground.
 
-## Get All Kittens
+<!-- TODO add link to playgound -->
 
-```ruby
-require 'kittn'
+# GraphQL
 
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
+All of Swop's exchange rate data is made available via a [GraphQL](https://graphql.org/) endpoint.
 
-```python
-import kittn
+### Endpoint
 
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
+`https://swop.cx/graphql`
+
+### Request
+
+`POST https://swop.cx/graphql`
+
+
+
+## Latest Rates Query
+
+> Retrive the latest rates from "USD" to "EUR" and "GBP"
 
 ```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
+curl \
+  -X POST \
+  -H "Authorization: ApiKey <your-api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{ "query": "{ latest(base: \"USD\", targets: [\"EUR\", \"GBP\"]) { base target value }}" }'\
+  https://swop.cx/graphql
 ```
 
-```javascript
-const kittn = require('kittn');
 
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
+```graphql
+query {
+  latest(base: "USD", targets: ["EUR", "GBP"]) {
+    base
+    target
+    value
+  }
+}
 ```
 
-> The above command returns JSON structured like this:
+> The response will look like this
 
 ```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
+{
+  "data": {
+    "latest": [
+      {
+        "base": "USD",
+        "target": "EUR",
+        "value": 0.902935
+      },
+      {
+        "base": "USD",
+        "target": "GBP",
+        "value": 0.760226
+      }
+    ]
   }
-]
+}
 ```
 
-This endpoint retrieves all kittens.
+This query retrieves the latest available exchange rate data. You can specify a `base` and also limit the returned `targets`.
 
-### HTTP Request
+### Query
 
-`GET http://example.com/api/kittens`
+`latest`
 
 ### Query Parameters
 
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
-
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
-
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
-}
-```
-
-This endpoint retrieves a specific kitten.
-
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
-### HTTP Request
-
-`GET http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
-
-## Delete a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.delete(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.delete(2);
-```
-
-> The above command returns JSON structured like this:
-
-```json
-{
-  "id": 2,
-  "deleted" : ":("
-}
-```
-
-This endpoint deletes a specific kitten.
-
-### HTTP Request
-
-`DELETE http://example.com/kittens/<ID>`
-
-### URL Parameters
-
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to delete
-
+Parameter | Type | Optional? | Default | Description
+--------- | ---- | --------- | ------- | -----------
+base | String | true | EUR | Specifies the base currency
+targets | [String!] | true |  all available target currencies | Only retrieve rates of the specified targets
